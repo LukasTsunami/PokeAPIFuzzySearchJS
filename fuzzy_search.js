@@ -1,5 +1,5 @@
-const configureFuzzySearch = ({ filterBy = ['name', 'habitat', 'type'], fuzzySearchPrecision = 0.2 } = {}) => ({
-  keys: filterBy,
+const configureFuzzySearch = (keys, fuzzySearchPrecision = 0.2) => ({
+  keys: keys,
   threshold: fuzzySearchPrecision
 });
 
@@ -32,47 +32,47 @@ const getPokemonList = async () => {
 }
 
 const getPokemonsByHabitatMap = async () => {
-  const habitats = await fetchData('https://pokeapi.co/api/v2/pokemon-habitat/', 'habitatListCache');
-  const habitatUrls = habitats.map(habitat => habitat.url);
+  const pokemonHabitats = await fetchData('https://pokeapi.co/api/v2/pokemon-habitat/', 'pokemonHabitatListCache');
+  const pokemonHabitatUrls = pokemonHabitats.map(habitat => habitat.url);
 
   try {
-    const habitatResponses = await Promise.all(habitatUrls.map(url => axios.get(url)));
+    const pokemonHabitatResponses = await Promise.all(pokemonHabitatUrls.map(url => axios.get(url)));
     const pokemonHabitatMap = new Map();
 
-    habitatResponses.forEach(response => {
-      const habitatName = response.data.name;
+    pokemonHabitatResponses.forEach(response => {
+      const pokemonHabitatName = response.data.name;
       response.data.pokemon_species.forEach(species => {
-        pokemonHabitatMap.set(species.name, habitatName);
+        pokemonHabitatMap.set(species.name, pokemonHabitatName);
       });
     });
 
     return pokemonHabitatMap;
   } catch (error) {
-    console.error("Erro ao buscar habitats detalhados:", error);
+    console.error("Erro ao buscar habitats detalhados de Pokémon:", error);
     return new Map();
   }
 }
 
 const getPokemonsByTypeMap = async () => {
-  const types = await fetchData('https://pokeapi.co/api/v2/type/', 'typeListCache');
-  const typeUrls = types.map(type => type.url);
+  const pokemonTypes = await fetchData('https://pokeapi.co/api/v2/type/', 'pokemonTypeListCache');
+  const pokemonTypeUrls = pokemonTypes.map(type => type.url);
 
   try {
-    const typeResponses = await Promise.all(typeUrls.map(url => axios.get(url)));
+    const pokemonTypeResponses = await Promise.all(pokemonTypeUrls.map(url => axios.get(url)));
     const pokemonTypeMap = new Map();
 
-    typeResponses.forEach(response => {
-      const typeName = response.data.name;
+    pokemonTypeResponses.forEach(response => {
+      const pokemonTypeName = response.data.name;
       response.data.pokemon.forEach(pokemonEntry => {
         const pokemonName = pokemonEntry.pokemon.name;
         const currentTypes = pokemonTypeMap.get(pokemonName) || [];
-        pokemonTypeMap.set(pokemonName, [...currentTypes, typeName]);
+        pokemonTypeMap.set(pokemonName, [...currentTypes, pokemonTypeName]);
       });
     });
 
     return pokemonTypeMap;
   } catch (error) {
-    console.error("Erro ao buscar tipos detalhados:", error);
+    console.error("Erro ao buscar tipos detalhados de Pokémon:", error);
     return new Map();
   }
 }
@@ -99,43 +99,35 @@ const getPokemonListWithHabitatAndType = async () => {
   return pokemonWithHabitatAndType;
 }
 
-const fuzzySearchFilter = async ({ searchTerm, options = configureFuzzySearch(), useAnd = false }) => {
+const fuzzySearchFilter = async ({ searchTerm, useAnd = false }) => {
   const results = await getPokemonListWithHabitatAndType();
-  const fuse = new Fuse(results, options);
-
-  if (typeof searchTerm === 'string') {
-    return fuse.search(searchTerm);
-  }
 
   if (useAnd) {
-    const initialResults = fuse.search(Object.values(searchTerm).join(" "));
-    const searchCriteria = Object.entries(searchTerm);
-
-    return initialResults.filter(result => 
-      searchCriteria.every(([key, term]) => 
-        result.item[key] && result.item[key].toLowerCase().includes(term.toLowerCase())
-      )
-    );
-  } else {
-    const searchTerms = Object.entries(searchTerm);
-    const allResults = [];
-
-    searchTerms.forEach(([key, term]) => {
-      const singleSearchOptions = configureFuzzySearch({ filterBy: [key] });
-      const singleFuse = new Fuse(results, singleSearchOptions);
-      allResults.push(...singleFuse.search(term));
+    // Para `AND`, faça uma busca individual para cada critério e encontre a interseção dos resultados
+    const searchCriteria = Object.entries(searchTerm).filter(([, term]) => term);
+    const searchResults = searchCriteria.map(([key, term]) => {
+      const options = configureFuzzySearch([key]);
+      const fuse = new Fuse(results, options);
+      return fuse.search(term).map(result => result.item);
     });
 
-    const uniqueResults = Array.from(new Set(allResults.map(result => result.item.name)))
-      .map(name => allResults.find(result => result.item.name === name));
+    // Encontra a interseção dos arrays de resultados para cada critério
+    const intersectResults = searchResults.reduce((acc, curr) =>
+      acc.filter(item => curr.some(result => result.name === item.name))
+    );
 
-    return uniqueResults;
+    return intersectResults;
+  } else {
+    // Para `OR`, fazer uma busca combinada sem restrições
+    const options = configureFuzzySearch(Object.keys(searchTerm));
+    const fuse = new Fuse(results, options);
+    return fuse.search(Object.values(searchTerm).join(" ")).map(result => result.item);
   }
 }
 
-// Exemplo de uso: Busca *fuzzy* com critério OR por nome, habitat ou tipo
+// Exemplo de uso: Busca *fuzzy* com critério AND por nome e habitat
 const result = await fuzzySearchFilter({
-  searchTerm: { name: "char", habitat: "forest", type: "fire" },
-  useAnd: false
+  searchTerm: { name: "nose", habitat: "cave" },
+  useAnd: true
 });
 console.log(result);
