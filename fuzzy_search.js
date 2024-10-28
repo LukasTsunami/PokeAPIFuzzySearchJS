@@ -31,46 +31,46 @@ const getPokemonList = async () => {
   return await fetchData('https://pokeapi.co/api/v2/pokemon?limit=1302', 'pokemonListCache');
 }
 
-const getHabitatsMap = async () => {
+const getPokemonsByHabitatMap = async () => {
   const habitats = await fetchData('https://pokeapi.co/api/v2/pokemon-habitat/', 'habitatListCache');
   const habitatUrls = habitats.map(habitat => habitat.url);
 
   try {
     const habitatResponses = await Promise.all(habitatUrls.map(url => axios.get(url)));
-    const habitatMap = new Map();
+    const pokemonHabitatMap = new Map();
 
     habitatResponses.forEach(response => {
       const habitatName = response.data.name;
       response.data.pokemon_species.forEach(species => {
-        habitatMap.set(species.name, habitatName);
+        pokemonHabitatMap.set(species.name, habitatName);
       });
     });
 
-    return habitatMap;
+    return pokemonHabitatMap;
   } catch (error) {
     console.error("Erro ao buscar habitats detalhados:", error);
     return new Map();
   }
 }
 
-const getTypesMap = async () => {
+const getPokemonsByTypeMap = async () => {
   const types = await fetchData('https://pokeapi.co/api/v2/type/', 'typeListCache');
   const typeUrls = types.map(type => type.url);
 
   try {
     const typeResponses = await Promise.all(typeUrls.map(url => axios.get(url)));
-    const typeMap = new Map();
+    const pokemonTypeMap = new Map();
 
     typeResponses.forEach(response => {
       const typeName = response.data.name;
       response.data.pokemon.forEach(pokemonEntry => {
         const pokemonName = pokemonEntry.pokemon.name;
-        const currentTypes = typeMap.get(pokemonName) || [];
-        typeMap.set(pokemonName, [...currentTypes, typeName]);
+        const currentTypes = pokemonTypeMap.get(pokemonName) || [];
+        pokemonTypeMap.set(pokemonName, [...currentTypes, typeName]);
       });
     });
 
-    return typeMap;
+    return pokemonTypeMap;
   } catch (error) {
     console.error("Erro ao buscar tipos detalhados:", error);
     return new Map();
@@ -78,17 +78,25 @@ const getTypesMap = async () => {
 }
 
 const getPokemonListWithHabitatAndType = async () => {
-  const [pokemonList, habitatMap, typeMap] = await Promise.all([
+  const cacheKey = 'pokemonListWithHabitatAndTypeCache';
+  const cachedData = getCachedData(cacheKey);
+  
+  if (cachedData) return cachedData;
+
+  const [pokemonList, pokemonHabitatMap, pokemonTypeMap] = await Promise.all([
     getPokemonList(),
-    getHabitatsMap(),
-    getTypesMap()
+    getPokemonsByHabitatMap(),
+    getPokemonsByTypeMap()
   ]);
 
-  return pokemonList.map(pokemon => ({
+  const pokemonWithHabitatAndType = pokemonList.map(pokemon => ({
     ...pokemon,
-    habitat: habitatMap.get(pokemon.name) || 'unknown',
-    type: typeMap.get(pokemon.name)?.join(', ') || 'unknown'
+    habitat: pokemonHabitatMap.get(pokemon.name) || 'unknown',
+    type: pokemonTypeMap.get(pokemon.name)?.join(', ') || 'unknown'
   }));
+
+  setCachedData(cacheKey, pokemonWithHabitatAndType);
+  return pokemonWithHabitatAndType;
 }
 
 const fuzzySearchFilter = async ({ searchTerm, options = configureFuzzySearch(), useAnd = false }) => {
@@ -96,11 +104,10 @@ const fuzzySearchFilter = async ({ searchTerm, options = configureFuzzySearch(),
   const fuse = new Fuse(results, options);
 
   if (typeof searchTerm === 'string') {
-    return fuse.search(searchTerm); // Busca única se searchTerm for uma string simples
+    return fuse.search(searchTerm);
   }
 
   if (useAnd) {
-    // AND: Retorna apenas os resultados que correspondem a todos os critérios
     const initialResults = fuse.search(Object.values(searchTerm).join(" "));
     const searchCriteria = Object.entries(searchTerm);
 
@@ -110,7 +117,6 @@ const fuzzySearchFilter = async ({ searchTerm, options = configureFuzzySearch(),
       )
     );
   } else {
-    // OR: Busca por cada critério e combina os resultados
     const searchTerms = Object.entries(searchTerm);
     const allResults = [];
 
@@ -120,7 +126,6 @@ const fuzzySearchFilter = async ({ searchTerm, options = configureFuzzySearch(),
       allResults.push(...singleFuse.search(term));
     });
 
-    // Remove duplicatas usando um Set para IDs de resultados únicos
     const uniqueResults = Array.from(new Set(allResults.map(result => result.item.name)))
       .map(name => allResults.find(result => result.item.name === name));
 
@@ -128,10 +133,9 @@ const fuzzySearchFilter = async ({ searchTerm, options = configureFuzzySearch(),
   }
 }
 
-// Exemplo de uso: Busca *fuzzy* com critério AND por nome, habitat ou tipo
+// Exemplo de uso: Busca *fuzzy* com critério OR por nome, habitat ou tipo
 const result = await fuzzySearchFilter({
   searchTerm: { name: "char", habitat: "forest", type: "fire" },
-  useAnd: true
+  useAnd: false
 });
-
 console.log(result);
