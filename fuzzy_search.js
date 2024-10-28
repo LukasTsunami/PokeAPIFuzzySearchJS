@@ -1,145 +1,157 @@
-const configureFuzzySearch = (keys, fuzzySearchPrecision = 0.2) => ({
-  keys: keys,
-  threshold: fuzzySearchPrecision
-});
+class CacheManager {
+  static obterDadosDoCache(chave) {
+    const dadosEmCache = localStorage.getItem(chave);
+    return dadosEmCache ? JSON.parse(dadosEmCache) : null;
+  }
 
-const getCachedData = (key) => {
-  const cachedData = localStorage.getItem(key);
-  return cachedData ? JSON.parse(cachedData) : null;
-}
-
-const setCachedData = (key, data) => {
-  localStorage.setItem(key, JSON.stringify(data));
-}
-
-const fetchData = async (url, cacheKey) => {
-  const cachedData = getCachedData(cacheKey);
-  if (cachedData) return cachedData;
-
-  try {
-    const response = await axios.get(url);
-    const data = response.data.results;
-    setCachedData(cacheKey, data);
-    return data;
-  } catch (error) {
-    console.error(`Erro ao buscar dados de ${cacheKey}:`, error);
-    return [];
+  static definirDadosNoCache(chave, dados) {
+    localStorage.setItem(chave, JSON.stringify(dados));
   }
 }
 
-const getPokemonList = async () => {
-  return await fetchData('https://pokeapi.co/api/v2/pokemon?limit=1302', 'pokemonListCache');
-}
+class PokemonDataFetcher {
+  static async buscarDados(url, chaveDoCache) {
+    const dadosEmCache = CacheManager.obterDadosDoCache(chaveDoCache);
+    if (dadosEmCache) return dadosEmCache;
 
-const getPokemonsByHabitatMap = async () => {
-  const pokemonHabitats = await fetchData('https://pokeapi.co/api/v2/pokemon-habitat/', 'pokemonHabitatListCache');
-  const pokemonHabitatUrls = pokemonHabitats.map(habitat => habitat.url);
+    try {
+      const resposta = await axios.get(url);
+      const dados = resposta.data.results;
+      CacheManager.definirDadosNoCache(chaveDoCache, dados);
+      return dados;
+    } catch (erro) {
+      console.error(`Erro ao buscar dados de ${chaveDoCache}:`, erro);
+      return [];
+    }
+  }
 
-  try {
-    const pokemonHabitatResponses = await Promise.all(pokemonHabitatUrls.map(url => axios.get(url)));
-    const pokemonHabitatMap = new Map();
+  static async obterListaDePokemon() {
+    return await this.buscarDados('https://pokeapi.co/api/v2/pokemon?limit=1302', 'pokemonListCache');
+  }
 
-    pokemonHabitatResponses.forEach(response => {
-      const pokemonHabitatName = response.data.name;
-      response.data.pokemon_species.forEach(species => {
-        pokemonHabitatMap.set(species.name, pokemonHabitatName);
+  static async obterMapaDePokemonPorHabitat() {
+    const habitatsDePokemon = await this.buscarDados('https://pokeapi.co/api/v2/pokemon-habitat/', 'pokemonHabitatListCache');
+    const urlsDeHabitatsDePokemon = habitatsDePokemon.map(habitat => habitat.url);
+
+    try {
+      const respostasDeHabitats = await Promise.all(urlsDeHabitatsDePokemon.map(url => axios.get(url)));
+      const mapaDeHabitatsDePokemon = new Map();
+
+      respostasDeHabitats.forEach(resposta => {
+        const nomeDoHabitat = resposta.data.name;
+        resposta.data.pokemon_species.forEach(especie => {
+          mapaDeHabitatsDePokemon.set(especie.name, nomeDoHabitat);
+        });
       });
-    });
 
-    return pokemonHabitatMap;
-  } catch (error) {
-    console.error("Erro ao buscar habitats detalhados de Pokémon:", error);
-    return new Map();
+      return mapaDeHabitatsDePokemon;
+    } catch (erro) {
+      console.error("Erro ao buscar habitats detalhados de Pokémon:", erro);
+      return new Map();
+    }
   }
-}
 
-const getPokemonsByTypeMap = async () => {
-  const pokemonTypes = await fetchData('https://pokeapi.co/api/v2/type/', 'pokemonTypeListCache');
-  const pokemonTypeUrls = pokemonTypes.map(type => type.url);
+  static async obterMapaDePokemonPorTipo() {
+    const tiposDePokemon = await this.buscarDados('https://pokeapi.co/api/v2/type/', 'pokemonTypeListCache');
+    const urlsDeTiposDePokemon = tiposDePokemon.map(tipo => tipo.url);
 
-  try {
-    const pokemonTypeResponses = await Promise.all(pokemonTypeUrls.map(url => axios.get(url)));
-    const pokemonTypeMap = new Map();
+    try {
+      const respostasDeTipos = await Promise.all(urlsDeTiposDePokemon.map(url => axios.get(url)));
+      const mapaDeTiposDePokemon = new Map();
 
-    pokemonTypeResponses.forEach(response => {
-      const pokemonTypeName = response.data.name;
-      response.data.pokemon.forEach(pokemonEntry => {
-        const pokemonName = pokemonEntry.pokemon.name;
-        const currentTypes = pokemonTypeMap.get(pokemonName) || [];
-        pokemonTypeMap.set(pokemonName, [...currentTypes, pokemonTypeName]);
+      respostasDeTipos.forEach(resposta => {
+        const nomeDoTipo = resposta.data.name;
+        resposta.data.pokemon.forEach(entradaDePokemon => {
+          const nomeDoPokemon = entradaDePokemon.pokemon.name;
+          const tiposAtuais = mapaDeTiposDePokemon.get(nomeDoPokemon) || [];
+          mapaDeTiposDePokemon.set(nomeDoPokemon, [...tiposAtuais, nomeDoTipo]);
+        });
       });
-    });
 
-    return pokemonTypeMap;
-  } catch (error) {
-    console.error("Erro ao buscar tipos detalhados de Pokémon:", error);
-    return new Map();
+      return mapaDeTiposDePokemon;
+    } catch (erro) {
+      console.error("Erro ao buscar tipos detalhados de Pokémon:", erro);
+      return new Map();
+    }
+  }
+
+  static async obterListaDePokemonComHabitatETipo() {
+    const chaveDoCache = 'pokemonListWithHabitatAndTypeCache';
+    const dadosEmCache = CacheManager.obterDadosDoCache(chaveDoCache);
+
+    if (dadosEmCache) return dadosEmCache;
+
+    const [listaDePokemon, mapaDeHabitats, mapaDeTipos] = await Promise.all([
+      this.obterListaDePokemon(),
+      this.obterMapaDePokemonPorHabitat(),
+      this.obterMapaDePokemonPorTipo()
+    ]);
+
+    const listaDePokemonComDetalhes = listaDePokemon.map(pokemon => ({
+      ...pokemon,
+      habitat: mapaDeHabitats.get(pokemon.name) || 'unknown',
+      tipo: mapaDeTipos.get(pokemon.name)?.join(', ') || 'unknown'
+    }));
+
+    CacheManager.definirDadosNoCache(chaveDoCache, listaDePokemonComDetalhes);
+    return listaDePokemonComDetalhes;
   }
 }
 
-const getPokemonListWithHabitatAndType = async () => {
-  const cacheKey = 'pokemonListWithHabitatAndTypeCache';
-  const cachedData = getCachedData(cacheKey);
-  
-  if (cachedData) return cachedData;
+class FuzzyPokemonSearch {
+  constructor(dadosDePokemon) {
+    this.dadosDePokemon = dadosDePokemon;
+  }
 
-  const [pokemonList, pokemonHabitatMap, pokemonTypeMap] = await Promise.all([
-    getPokemonList(),
-    getPokemonsByHabitatMap(),
-    getPokemonsByTypeMap()
-  ]);
+  configurarOpcoesDeBusca(chavesDeBusca, precisaoDaBusca = 0.2) {
+    return { keys: chavesDeBusca, threshold: precisaoDaBusca };
+  }
 
-  const pokemonWithHabitatAndType = pokemonList.map(pokemon => ({
-    ...pokemon,
-    habitat: pokemonHabitatMap.get(pokemon.name) || 'unknown',
-    type: pokemonTypeMap.get(pokemon.name)?.join(', ') || 'unknown'
-  }));
-
-  setCachedData(cacheKey, pokemonWithHabitatAndType);
-  return pokemonWithHabitatAndType;
-}
-
-const fuzzySearchFilter = async ({ searchTerm, useAnd = false }) => {
-  const results = await getPokemonListWithHabitatAndType();
-  
-  if (useAnd) {
-    // Para `AND`, faça uma busca individual para cada critério e encontre a interseção dos resultados
-    const searchCriteria = Object.entries(searchTerm).filter(([, term]) => term);
-    const searchResults = searchCriteria.map(([key, term]) => {
-      const options = configureFuzzySearch([key]);
-      const fuse = new Fuse(results, options);
-      return fuse.search(term).map(result => result.item);
+  realizarBuscasIndividuais(criterios) {
+    return criterios.map(([chave, termo]) => {
+      const opcoes = this.configurarOpcoesDeBusca([chave]);
+      const mecanismoDeBusca = new Fuse(this.dadosDePokemon, opcoes);
+      return mecanismoDeBusca.search(termo).map(resultado => resultado.item);
     });
+  }
 
-    // Encontra a interseção dos arrays de resultados para cada critério
-    const intersectResults = searchResults.reduce((acc, curr) =>
-      acc.filter(item => curr.some(result => result.name === item.name))
+  encontrarIntersecaoDeResultados(resultados) {
+    return resultados.reduce((resultadosAcumulados, resultadosAtuais) =>
+      resultadosAcumulados.filter(item =>
+        resultadosAtuais.some(resultado => resultado.name === item.name)
+      )
     );
+  }
 
-    return intersectResults;
-  } else {
-    // Para `OR`, faça uma busca individual para cada critério e combine todos os resultados, removendo duplicatas
-    const searchCriteria = Object.entries(searchTerm).filter(([, term]) => term);
-    const allResults = [];
-
-    searchCriteria.forEach(([key, term]) => {
-      const options = configureFuzzySearch([key]);
-      const fuse = new Fuse(results, options);
-      allResults.push(...fuse.search(term).map(result => result.item));
+  filtrarResultadosUnicosPorNome(resultados) {
+    const nomesUnicos = new Set();
+    return resultados.filter(resultado => {
+      if (nomesUnicos.has(resultado.name)) return false;
+      nomesUnicos.add(resultado.name);
+      return true;
     });
+  }
 
-    // Remove duplicatas usando um Set para nomes de Pokémon únicos
-    const uniqueResults = Array.from(new Set(allResults.map(result => result.name)))
-      .map(name => allResults.find(result => result.name === name));
+  async buscar({ criterioDeBusca, usarClausulaANDParaBusca = false }) {
+    const criteriosAtivos = Object.entries(criterioDeBusca).filter(([, termo]) => termo);
 
-    return uniqueResults;
+    if (usarClausulaANDParaBusca) {
+      const resultadosPorCriterio = this.realizarBuscasIndividuais(criteriosAtivos);
+      return this.encontrarIntersecaoDeResultados(resultadosPorCriterio);
+    } else {
+      const resultadosPorCriterio = this.realizarBuscasIndividuais(criteriosAtivos);
+      const resultadosCombinados = resultadosPorCriterio.flat();
+      return this.filtrarResultadosUnicosPorNome(resultadosCombinados);
+    }
   }
 }
 
-// Exemplo de uso: Busca *fuzzy* com critério OR por nome e habitat
-const result = await fuzzySearchFilter({
-  searchTerm: { name: "nose", habitat: "cave" },
-  useAnd: false
-});
-console.log(result);
+// Exemplo de uso
+const dadosDePokemon = await PokemonDataFetcher.obterListaDePokemonComHabitatETipo();
+const mecanismoDeBusca = new FuzzyPokemonSearch(dadosDePokemon);
 
+const resultadosDaBusca = await mecanismoDeBusca.buscar({
+  criterioDeBusca: { name: "nose", habitat: "cave" },
+  usarClausulaANDParaBusca: false
+});
+console.log(resultadosDaBusca);
