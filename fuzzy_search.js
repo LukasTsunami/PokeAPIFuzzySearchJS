@@ -1,4 +1,7 @@
-class CacheManager {
+import axios from 'axios';
+import Fuse from 'fuse.js';
+
+export class CacheManager {
   static obterDadosDoCache(chave) {
     const dadosEmCache = localStorage.getItem(chave);
     return dadosEmCache ? JSON.parse(dadosEmCache) : null;
@@ -9,7 +12,7 @@ class CacheManager {
   }
 }
 
-class PokemonDataFetcher {
+export class PokemonDataFetcher {
   static async buscarDados(url, chaveDoCache) {
     const dadosEmCache = CacheManager.obterDadosDoCache(chaveDoCache);
     if (dadosEmCache) return dadosEmCache;
@@ -90,7 +93,7 @@ class PokemonDataFetcher {
     const listaDePokemonComDetalhes = listaDePokemon.map(pokemon => ({
       ...pokemon,
       habitat: mapaDeHabitats.get(pokemon.name) || 'unknown',
-      tipo: mapaDeTipos.get(pokemon.name)?.join(', ') || 'unknown'
+      type: mapaDeTipos.get(pokemon.name)?.join(', ') || 'unknown'
     }));
 
     CacheManager.definirDadosNoCache(chaveDoCache, listaDePokemonComDetalhes);
@@ -98,7 +101,7 @@ class PokemonDataFetcher {
   }
 }
 
-class FuzzyPokemonSearch {
+export class FuzzyPokemonSearch {
   constructor(dadosDePokemon, itensPorPagina = 10, chavesDeBusca = ['name', 'habitat', 'type'], precisaoDaBusca = 0.2) {
     this.dadosDePokemon = dadosDePokemon;
     this.itensPorPagina = itensPorPagina;
@@ -171,15 +174,3 @@ class FuzzyPokemonSearch {
     return this.paginarResultados(resultados, pagina);
   }
 }
-
-// Exemplo de uso
-const dadosDePokemon = await PokemonDataFetcher.obterListaDePokemonComHabitatETipo();
-const mecanismoDeBusca = new FuzzyPokemonSearch(dadosDePokemon, 10);
-
-// Buscando com paginação, exibindo a primeira página de resultados
-const resultadosDaBusca = await mecanismoDeBusca.buscar({
-  criterioDeBusca: { name: "nose", habitat: "cave" },
-  usarClausulaANDParaBusca: false,
-  pagina: 1
-});
-console.log(resultadosDaBusca);
