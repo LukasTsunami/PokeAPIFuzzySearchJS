@@ -91,11 +91,47 @@ const getPokemonListWithHabitatAndType = async () => {
   }));
 }
 
-const fuzzySearchFilter = async ({ searchTerm, options = configureFuzzySearch() }) => {
+const fuzzySearchFilter = async ({ searchTerm, options = configureFuzzySearch(), useAnd = false }) => {
   const results = await getPokemonListWithHabitatAndType();
   const fuse = new Fuse(results, options);
-  return fuse.search(searchTerm);
+
+  if (typeof searchTerm === 'string') {
+    return fuse.search(searchTerm); // Busca única se searchTerm for uma string simples
+  }
+
+  if (useAnd) {
+    // AND: Retorna apenas os resultados que correspondem a todos os critérios
+    const initialResults = fuse.search(Object.values(searchTerm).join(" "));
+    const searchCriteria = Object.entries(searchTerm);
+
+    return initialResults.filter(result => 
+      searchCriteria.every(([key, term]) => 
+        result.item[key] && result.item[key].toLowerCase().includes(term.toLowerCase())
+      )
+    );
+  } else {
+    // OR: Busca por cada critério e combina os resultados
+    const searchTerms = Object.entries(searchTerm);
+    const allResults = [];
+
+    searchTerms.forEach(([key, term]) => {
+      const singleSearchOptions = configureFuzzySearch({ filterBy: [key] });
+      const singleFuse = new Fuse(results, singleSearchOptions);
+      allResults.push(...singleFuse.search(term));
+    });
+
+    // Remove duplicatas usando um Set para IDs de resultados únicos
+    const uniqueResults = Array.from(new Set(allResults.map(result => result.item.name)))
+      .map(name => allResults.find(result => result.item.name === name));
+
+    return uniqueResults;
+  }
 }
 
-const result = await fuzzySearchFilter({ searchTerm: "fire" });
+// Exemplo de uso: Busca *fuzzy* com critério AND por nome, habitat ou tipo
+const result = await fuzzySearchFilter({
+  searchTerm: { name: "char", habitat: "forest", type: "fire" },
+  useAnd: true
+});
+
 console.log(result);
