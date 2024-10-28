@@ -101,7 +101,7 @@ const getPokemonListWithHabitatAndType = async () => {
 
 const fuzzySearchFilter = async ({ searchTerm, useAnd = false }) => {
   const results = await getPokemonListWithHabitatAndType();
-
+  
   if (useAnd) {
     // Para `AND`, faça uma busca individual para cada critério e encontre a interseção dos resultados
     const searchCriteria = Object.entries(searchTerm).filter(([, term]) => term);
@@ -118,16 +118,28 @@ const fuzzySearchFilter = async ({ searchTerm, useAnd = false }) => {
 
     return intersectResults;
   } else {
-    // Para `OR`, fazer uma busca combinada sem restrições
-    const options = configureFuzzySearch(Object.keys(searchTerm));
-    const fuse = new Fuse(results, options);
-    return fuse.search(Object.values(searchTerm).join(" ")).map(result => result.item);
+    // Para `OR`, faça uma busca individual para cada critério e combine todos os resultados, removendo duplicatas
+    const searchCriteria = Object.entries(searchTerm).filter(([, term]) => term);
+    const allResults = [];
+
+    searchCriteria.forEach(([key, term]) => {
+      const options = configureFuzzySearch([key]);
+      const fuse = new Fuse(results, options);
+      allResults.push(...fuse.search(term).map(result => result.item));
+    });
+
+    // Remove duplicatas usando um Set para nomes de Pokémon únicos
+    const uniqueResults = Array.from(new Set(allResults.map(result => result.name)))
+      .map(name => allResults.find(result => result.name === name));
+
+    return uniqueResults;
   }
 }
 
-// Exemplo de uso: Busca *fuzzy* com critério AND por nome e habitat
+// Exemplo de uso: Busca *fuzzy* com critério OR por nome e habitat
 const result = await fuzzySearchFilter({
   searchTerm: { name: "nose", habitat: "cave" },
-  useAnd: true
+  useAnd: false
 });
 console.log(result);
+
