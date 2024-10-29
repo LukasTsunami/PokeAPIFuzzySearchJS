@@ -15,7 +15,7 @@ describe('FuzzyPokemonSearch - Integração Completa', () => {
       { name: 'dragonite', habitat: 'rare', type: ['dragon', 'flying'] },
       { name: 'pikachu', habitat: 'forest', type: ['electric'] }
     ];
-    mecanismoDeBusca = new FuzzyPokemonSearch(dadosDePokemon, 3);
+    mecanismoDeBusca = new FuzzyPokemonSearch({ dadosDePokemon, itensPorPagina: 3 });
   });
 
   describe('Busca com Tradução e Mistura de Termos em Português e Inglês', () => {

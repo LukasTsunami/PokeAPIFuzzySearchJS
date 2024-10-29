@@ -7,7 +7,7 @@ global.localStorage = new LocalStorage('./cache');
 
 async function principal() {
   const dadosDePokemonComDetalhes = await PokemonDataFetcher.obterListaDePokemonComHabitatETipo();
-  const mecanismoDeBusca = new FuzzyPokemonSearch(dadosDePokemonComDetalhes, 20);
+  const mecanismoDeBusca = new FuzzyPokemonSearch({ dadosDePokemon: dadosDePokemonComDetalhes, itensPorPagina: 20 });
 
   // === Cenário 1: Buscar por Nome Exato (Pikachu) ===
   const buscaPorNomeExato = await mecanismoDeBusca.buscar({

@@ -13,7 +13,7 @@ describe('FuzzyPokemonSearch', () => {
       { name: 'venusaur', habitat: 'grassland', type: ['grass', 'poison'] },
       { name: 'scyther', habitat: 'forest', type: ['bug', 'flying'] }
     ];
-    mecanismoDeBusca = new FuzzyPokemonSearch(dadosDePokemon, 2);
+    mecanismoDeBusca = new FuzzyPokemonSearch({ dadosDePokemon, itensPorPagina: 2 });
   });
 
   describe('Configuração de Opções de Busca', () => {
@@ -204,7 +204,8 @@ describe('FuzzyPokemonSearch', () => {
     });
 
     test('ajusta total de páginas corretamente para diferentes tamanhos de página', async () => {
-      const buscaComItensPorPagina3 = new FuzzyPokemonSearch(dadosDePokemon, 3);
+      const buscaComItensPorPagina3 = new FuzzyPokemonSearch({ dadosDePokemon, itensPorPagina: 3 });
+
       const resultado = await buscaComItensPorPagina3.buscar({
         criterioDeBusca: { name: 'a' },
         usarClausulaANDParaBusca: false,
