@@ -17,7 +17,7 @@ global.localStorage = new LocalStorage('./cache');
 Primeiro, obtemos os dados dos Pokémon e instanciamos a busca:
 ```javascript
 const dadosDePokemonComDetalhes = await PokemonDataFetcher.obterListaDePokemonComHabitatETipo();
-const mecanismoDeBusca = new FuzzyPokemonSearch(dadosDePokemonComDetalhes, 20);
+const mecanismoDeBusca = new FuzzyPokemonSearch({ dadosDePokemon: dadosDePokemonComDetalhes, itensPorPagina: 20 });
 ```
 
 ## 2. Exemplos de Uso
