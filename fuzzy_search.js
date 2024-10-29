@@ -1,5 +1,14 @@
 import axios from 'axios';
 import Fuse from 'fuse.js';
+import axiosRetry from 'axios-retry';
+
+axiosRetry(axios, {
+  retries: 6,
+  retryDelay: axiosRetry.exponentialDelay, // Aumenta o tempo entre tentativas exponencialmente
+  retryCondition: (error) => {
+    return error.code === 'ETIMEDOUT' || error.response?.status === 429; // Re-tenta no caso de timeout ou erro 429
+  }
+});
 
 export class CacheManager {
   static obterDadosDoCache(chave) {
