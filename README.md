@@ -14,7 +14,7 @@ Uma vez que a API estiver em pé, você pode consumir ela pela URI
 
 `/api/buscar?`
 
-Passando como parâmetro os critérios de busca
+Passando como parâmetro os critérios de busca (por hora só estão implementados tipo, habitat e nome)
 
 | Critério  | Variações dele que funcionam |O que ele representa|
 | ------------- | ------------- |-----------|
