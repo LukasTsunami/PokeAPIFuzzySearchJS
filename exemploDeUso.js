@@ -7,7 +7,7 @@ global.localStorage = new LocalStorage('./cache');
 
 async function principal() {
   const dadosDePokemonComDetalhes = await PokemonDataFetcher.obterListaDePokemonComHabitatETipo();
-  const mecanismoDeBusca = new FuzzyPokemonSearch(dadosDePokemonComDetalhes, 5);
+  const mecanismoDeBusca = new FuzzyPokemonSearch(dadosDePokemonComDetalhes, 20);
 
   // === Cenário 1: Buscar por Nome Exato (Pikachu) ===
   const buscaPorNomeExato = await mecanismoDeBusca.buscar({
@@ -142,6 +142,65 @@ async function principal() {
     pagina: 1
   });
   console.log("Cenário 15 - Busca Complexa (Montanha, Fogo, Char):", buscaComplexa.data);
+  console.warn("------------------------------------------------------");
+
+  console.warn("=== Cenário 15: Busca em Português e Misturada com Inglês ===");
+
+  // Cenário 16: Termos em português para habitat e tipo
+  const searchByPortugueseTerms = await mecanismoDeBusca.buscar({
+    criterioDeBusca: { habitat: 'floresta', type: 'fogo' },
+    usarClausulaANDParaBusca: false,
+    pagina: 1
+  });
+  console.log("Resultado - Busca por Habitat 'floresta' e Tipo 'fogo':", searchByPortugueseTerms.data);
+
+  // Cenário 17: Termos misturados (inglês e português)
+  const searchByMixedTerms = await mecanismoDeBusca.buscar({
+    criterioDeBusca: { habitat: 'cave', type: 'grama' },
+    usarClausulaANDParaBusca: false,
+    pagina: 1
+  });
+  console.log("Resultado - Busca por Habitat 'cave' e Tipo 'grama':", searchByMixedTerms.data);
+
+  console.warn("------------------------------------------------------");
+
+  console.warn("=== Cenário 16: Busca em Inglês com Erros de Digitação ===");
+
+  // Cenário 18: Termos com erro de digitação misturados (inglês e português)
+  const searchWithTypos = await mecanismoDeBusca.buscar({
+    criterioDeBusca: { habitat: 'hountain', type: 'fire' }, // "fier" como erro de digitação para "fire"
+    usarClausulaANDParaBusca: true,
+    pagina: 1
+  });
+  console.log("Resultado - Busca com Erro de Digitação 'floresta' e 'fier':", searchWithTypos.data);
+
+  // Cenário 19: Termo em inglês com erro de digitação para habitat
+  const searchWithTypoInHabitat = await mecanismoDeBusca.buscar({
+    criterioDeBusca: { habitat: 'glassland', type: 'grasss', name: 'bul' }, // "mountaon" como erro de digitação para "mountain"
+    usarClausulaANDParaBusca: false,
+    pagina: 1
+  });
+  console.log("Resultado - Busca com Erro de Digitação 'glassland', 'bul' e 'grass':", searchWithTypoInHabitat.data);
+
+  console.warn("------------------------------------------------------");
+  
+  // Cenário 20: Termo em inglês com erro de digitação para habitat
+  const searchOnlyName = await mecanismoDeBusca.buscar({
+    criterioDeBusca: { name: 'bulbazaur', type: 'glass', habitat: 'grasslando' }, // "mountaon" como erro de digitação para "mountain"
+    usarClausulaANDParaBusca: true,
+    pagina: 1
+  });
+  console.log("Resultado - Busca com Erro de Digitação 'glassland', 'bul' e 'grass':", searchOnlyName);
+
+  console.warn("------------------------------------------------------");
+
+  const searchOnlyTypeFuzzy = await mecanismoDeBusca.buscar({
+    criterioDeBusca: { type: 'glass', name: 'bul' }, // "mountaon" como erro de digitação para "mountain"
+    usarClausulaANDParaBusca: true,
+    pagina: 1
+  });
+  console.log("Resultado - Busca com Erro de Digitação 'glassland', 'bul' e 'grass':", searchOnlyTypeFuzzy.data);
+
   console.warn("------------------------------------------------------");
 }
 

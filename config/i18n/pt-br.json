@@ -1,0 +1,35 @@
+{
+  "tipos": {
+    "fogo": "fire",
+    "água": "water",
+    "grama": "grass",
+    "elétrico": "electric",
+    "terra": "ground",
+    "pedra": "rock",
+    "fantasma": "ghost",
+    "inseto": "bug",
+    "aço": "steel",
+    "psíquico": "psychic",
+    "gelo": "ice",
+    "dragão": "dragon",
+    "noturno": "dark",
+    "fada": "fairy",
+    "estrelar": "stellar",
+    "desconhecido": "unknown",
+    "normal": "normal",
+    "lutador": "fighting",
+    "voador": "flying",
+    "venenoso": "poison"
+  },
+  "habitats": {
+    "caverna": "cave",
+    "floresta": "forest",
+    "pradaria": "grassland",
+    "montanha": "mountain",
+    "raro": "rare",
+    "terreno-áspero": "rough-terrain",
+    "mar": "sea",
+    "urbano": "urban",
+    "beira-da-água": "waters-edge"
+  }
+}
