@@ -3,7 +3,7 @@ import { LocalStorage } from 'node-localstorage';
 import { FuzzyPokemonSearch, PokemonDataFetcher } from './fuzzy_search.js';
 
 // Necessário apenas se rodar no Node.js
-global.localStorage = new LocalStorage('./scratch');
+global.localStorage = new LocalStorage('./cache');
 
 async function principal() {
   const dadosDePokemonComDetalhes = await PokemonDataFetcher.obterListaDePokemonComHabitatETipo();
