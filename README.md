@@ -1,6 +1,29 @@
-# FuzzyPokemonSearch - Guia Completo de Uso
+# FuzzyPokemonSearch API
 
 Bem-vindo! Este guia vai te ensinar a usar o `FuzzyPokemonSearch`, uma ferramenta poderosa para buscar Pokémon e suas características usando busca aproximada (fuzzy search). O mecanismo permite encontrar itens mesmo com erros de digitação, misturando critérios de busca em inglês e português.
+
+Você pode subir a api pela docker com o comando
+
+`docker compose up app-dev`
+
+Uma vez que a API estiver em pé, você pode consumir ela pela URI
+
+`/api/buscar?`
+
+Passando como parâmetro os critérios de busca
+
+| Critérios  | Second Header |
+| ------------- | ------------- |
+| name  | nome  |Nome do Pokémon|
+| type  | tipo  |Tipo do Pokémon|
+| habitat  | habitat  |Onde ele habita|
+| page  | page  |Página Atual|
+| limit  | limit  |Quantidade de Itens por Página|
+| usarClausulaANDParaBusca  | usarClausulaANDParaBusca  |Se true, faz uma busca usando operador lógico AND, padrão é OR|
+| precisaoDaBusca  | precisaoDaBusca  |Um valor de 0 a 1 que refina quantas variações da mesma palavra pode trazer|
+| precisaoDaBuscaTraduzidaFloat  | precisaoDaBuscaTraduzidaFloat  |Um valor de 0 a 1 que refina quantas variações da mesma palavra pode trazer, pra termos traduzidos|
+
+# FuzzyPokemonSearch - Guia Completo de Uso dos objetos JS:
 
 ## Pré-requisitos
 
