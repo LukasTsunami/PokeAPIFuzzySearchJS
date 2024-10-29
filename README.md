@@ -1,4 +1,4 @@
-# FuzzyPokemonSearch API
+# <img src="https://cdn-icons-png.flaticon.com/512/1033/1033083.png" width="40" height="40" /> FuzzyPokemonSearch API
 
 Bem-vindo! Este guia vai te ensinar a usar o `FuzzyPokemonSearch`, uma ferramenta poderosa para buscar Pokémon e suas características usando busca aproximada (fuzzy search). O mecanismo permite encontrar itens mesmo com erros de digitação, misturando critérios de busca em inglês e português.
 
