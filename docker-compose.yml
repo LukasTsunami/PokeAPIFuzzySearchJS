@@ -1,0 +1,12 @@
+services:
+  pokedex-fuzzy-search:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - NODE_ENV=development
+    ports:
+      - "3055:3000"
+    volumes:
+      - .:/app
+    command: npm start src/exemploDeUso.js

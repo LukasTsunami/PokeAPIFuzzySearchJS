@@ -1,5 +1,5 @@
-import { FuzzyPokemonSearch } from '../../fuzzy_search';
-import { I18nTranslator } from '../../lib/i18n_translator';
+import { FuzzyPokemonSearch } from '../../src/fuzzy_search';
+import { I18nTranslator } from '../../src/lib/i18n_translator';
 
 describe('FuzzyPokemonSearch - Integração Completa', () => {
   let dadosDePokemon;

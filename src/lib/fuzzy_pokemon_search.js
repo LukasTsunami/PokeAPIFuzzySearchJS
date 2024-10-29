@@ -1,6 +1,6 @@
 import Fuse from 'fuse.js';
 import { I18nTranslator } from './i18n_translator';
-import translations from '../config/i18n/pt-br.json';
+import translations from '../../config/i18n/pt-br.json';
 
 export class FuzzyPokemonSearch {
   constructor({

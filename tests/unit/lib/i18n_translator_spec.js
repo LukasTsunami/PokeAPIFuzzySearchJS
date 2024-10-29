@@ -1,4 +1,4 @@
-import { I18nTranslator } from '../../../lib/i18n_translator';
+import { I18nTranslator } from '../../../src/lib/i18n_translator';
 import * as translations from '../../../config/i18n/pt-br.json';
 
 describe('I18nTranslator', () => {

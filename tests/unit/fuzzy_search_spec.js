@@ -1,4 +1,4 @@
-import { FuzzyPokemonSearch } from '../../fuzzy_search';
+import { FuzzyPokemonSearch } from '../../src/fuzzy_search';
 
 describe('FuzzyPokemonSearch', () => {
   let dadosDePokemon;
