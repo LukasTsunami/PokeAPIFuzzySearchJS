@@ -153,7 +153,7 @@ describe('FuzzyPokemonSearch', () => {
       expect(resultado.data).toEqual([expect.objectContaining({ name: 'bulbasaur', habitat: 'grassland', type: ['grass'] })]);
     });
 
-    test('tipo como primeira posição do array de tipos', async () => {
+    test("'tipo' como primeira posição do array de tipos", async () => {
       const resultado = await mecanismoDeBusca.buscar({
         criterioDeBusca: { type: 'bug' },
         usarClausulaANDParaBusca: false
@@ -161,7 +161,7 @@ describe('FuzzyPokemonSearch', () => {
       expect(resultado.data).toEqual([expect.objectContaining({ name: 'scyther', type: ['bug', 'flying'] })]);
     });
 
-    test('tipo como segunda posição do array de tipos', async () => {
+    test("'tipo' como segunda posição do array de tipos", async () => {
       const resultado = await mecanismoDeBusca.buscar({
         criterioDeBusca: { type: 'flying' },
         usarClausulaANDParaBusca: false
