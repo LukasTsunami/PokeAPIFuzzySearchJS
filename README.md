@@ -16,6 +16,8 @@ Uma vez que a API estiver em pé, você pode consumir ela pela URI
 
 Passando como parâmetro os critérios de busca (por hora só estão implementados tipo, habitat e nome)
 
+Usar a API é bem similar à usar os objetos javascript (a forma que consome a API usando a fuzzy search, portanto não vou cobrir essa parte na documentação da API, use os exemplos abaixo como base para o consumo da api também)
+
 | Critério  | Variações dele que funcionam |O que ele representa|
 | ------------- | ------------- |-----------|
 | name  | nome  |Nome do Pokémon|
@@ -37,6 +39,9 @@ ou simplesmente, se for rodar da sua máquina:
 
 As traduções ficam na pasta 
 `config/i18n/abreviação_linguagem.json`
+
+___
+
 
 # FuzzyPokemonSearch - Guia Completo de Uso dos objetos JS:
 
