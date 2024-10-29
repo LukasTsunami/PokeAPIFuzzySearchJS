@@ -12,14 +12,14 @@ beforeEach(() => {
   jest.resetModules();
 
   // Mockando os módulos necessários
-  jest.doMock('../../src/fuzzy_search.js', () => ({
+  jest.mock('../../src/fuzzy_search.js', () => ({
     FuzzyPokemonSearch: jest.fn(),
     PokemonDataFetcher: {
       obterListaDePokemonComHabitatETipo: jest.fn(),
     },
   }));
 
-  jest.doMock('../../src/middleware/validate_search_params.js', () =>
+  jest.mock('../../src/middleware/validate_search_params.js', () =>
     jest.fn((req, res, next) => {
       req.body = {
         criterioDeBusca: { name: req.query.nome || '' },
