@@ -23,6 +23,17 @@ Passando como parâmetro os critérios de busca
 | precisaoDaBusca  | precisaoDaBusca  |Um valor de 0 a 1 que refina quantas variações da mesma palavra pode trazer|
 | precisaoDaBuscaTraduzidaFloat  | precisaoDaBuscaTraduzidaFloat  |Um valor de 0 a 1 que refina quantas variações da mesma palavra pode trazer, pra termos traduzidos|
 
+Para Rodar os testes simplesmente rode o comando
+
+`docker compose run app-dev npm run test `
+
+ou simplesmente, se for rodar da sua máquina:
+
+`npm run dev
+
+As traduções ficam na pasta 
+`config/i18n/abreviação_linguagem.json`
+
 # FuzzyPokemonSearch - Guia Completo de Uso dos objetos JS:
 
 ## Pré-requisitos
