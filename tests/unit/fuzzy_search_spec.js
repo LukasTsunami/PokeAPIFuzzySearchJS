@@ -150,12 +150,10 @@ describe('FuzzyPokemonSearch', () => {
         usarClausulaANDParaBusca: false,
         pagina: 1
       });
-      
-      console.log(resultado); // Log para verificar o conteúdo dos resultados
-  
+        
       expect(resultado.meta).toEqual({
         current_page: 1,
-        total_pages: 2, // Total ajustado para corresponder ao total de 4 itens com 2 itens por página
+        total_pages: 2,
         total_count: dadosDePokemon.length,
         items_in_current_page: 2
       });
@@ -165,16 +163,14 @@ describe('FuzzyPokemonSearch', () => {
       const resultado = await mecanismoDeBusca.buscar({
         criterioDeBusca: { name: 'zubat' },
         usarClausulaANDParaBusca: false,
-        pagina: 10 // Página sem resultados, pois `dadosDePokemon` tem poucos itens
+        pagina: 10 
       });
-  
-      console.log(resultado); // Log para verificar o conteúdo dos resultados
-  
+    
       expect(resultado.data).toEqual([]);
       expect(resultado.meta).toEqual({
         current_page: 10,
         total_pages: 1,
-        total_count: 1, // Apenas um item corresponde ao critério "zubat"
+        total_count: 1,
         items_in_current_page: 0
       });
     });
@@ -186,10 +182,8 @@ describe('FuzzyPokemonSearch', () => {
         usarClausulaANDParaBusca: false,
         pagina: 1
       });
-  
-      console.log(resultado); // Log para verificar o conteúdo dos resultados
-  
-      expect(resultado.meta.total_pages).toBe(2); // Total ajustado para refletir 4 itens com 3 itens por página
+    
+      expect(resultado.meta.total_pages).toBe(2); 
     });
   });
   

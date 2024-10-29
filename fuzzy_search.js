@@ -2,6 +2,7 @@ import axios from 'axios';
 import Fuse from 'fuse.js';
 import axiosRetry from 'axios-retry';
 
+// A API vai bloquear muitas chamadas consecutivas, então fazemos isso de uma forma segura:
 axiosRetry(axios, {
   retries: 6,
   retryDelay: axiosRetry.exponentialDelay, // Aumenta o tempo entre tentativas exponencialmente
