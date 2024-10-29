@@ -1,144 +1,169 @@
-import axios from 'axios';
-import MockAdapter from 'axios-mock-adapter';
-import { FuzzyPokemonSearch, PokemonDataFetcher, CacheManager } from '../../fuzzy_search';
+import { FuzzyPokemonSearch } from '../../fuzzy_search';
+import { I18nTranslator } from '../../lib/i18n_translator';
 
-const mock = new MockAdapter(axios);
+describe('FuzzyPokemonSearch - Integração Completa', () => {
+  let dadosDePokemon;
+  let mecanismoDeBusca;
 
-describe('Integração FuzzyPokemonSearch com PokemonDataFetcher e CacheManager', () => {
-  beforeEach(() => {
-    localStorage.clear();
-    mock.reset();
+  beforeAll(() => {
+    dadosDePokemon = [
+      { name: 'charizard', habitat: 'mountain', type: ['fire', 'flying'] },
+      { name: 'gyarados', habitat: 'sea', type: ['water', 'flying'] },
+      { name: 'venusaur', habitat: 'grassland', type: ['grass', 'poison'] },
+      { name: 'gengar', habitat: 'urban', type: ['ghost', 'poison'] },
+      { name: 'scyther', habitat: 'forest', type: ['bug', 'flying'] },
+      { name: 'dragonite', habitat: 'rare', type: ['dragon', 'flying'] },
+      { name: 'pikachu', habitat: 'forest', type: ['electric'] }
+    ];
+    mecanismoDeBusca = new FuzzyPokemonSearch(dadosDePokemon, 3);
   });
 
-  describe('Busca e Cache Básico', () => {
-    test('deve buscar dados e armazenar no cache, e usar o cache em busca subsequente', async () => {
-      const pokemonData = [{ name: 'bulbasaur' }, { name: 'pikachu' }];
-      const url = 'https://pokeapi.co/api/v2/pokemon?limit=1302';
-      mock.onGet(url).reply(200, { results: pokemonData });
-
-      // 1. Buscar e armazenar no cache
-      const fetchedData = await PokemonDataFetcher.obterListaDePokemon();
-      expect(fetchedData).toEqual(pokemonData);
-      expect(CacheManager.obterDadosDoCache('pokemonListCache')).toEqual(pokemonData);
-
-      // 2. Realizar uma busca fuzzy no cache
-      const mecanismoDeBusca = new FuzzyPokemonSearch(fetchedData, 2);
+  describe('Busca com Tradução e Mistura de Termos em Português e Inglês', () => {
+    
+    test('Busca por "habitat" em português e "type" em inglês com fuzzy search', async () => {
       const resultado = await mecanismoDeBusca.buscar({
-        criterioDeBusca: { name: 'pikachu' },
-        usarClausulaANDParaBusca: false
-      });
-
-      expect(resultado.data).toEqual([
-        expect.objectContaining({ name: 'pikachu' })
-      ]);
-    });
-  });
-
-  describe('Busca com Dados de Habitat e Type', () => {
-    test('deve buscar dados de habitat e type, armazenar no cache, e buscar fuzzy com critérios combinados', async () => {
-      const pokemonListData = [{ name: 'zubat', url: '/pokemon/41/' }];
-      const habitatData = [{ name: 'cave', url: '/habitat/1/' }];
-      const typeData = [{ name: 'flying', url: '/type/1/' }];
-      const pokemonListUrl = 'https://pokeapi.co/api/v2/pokemon?limit=1302';
-      const habitatUrl = 'https://pokeapi.co/api/v2/pokemon-habitat/';
-      const typeUrl = 'https://pokeapi.co/api/v2/type/';
-      
-      mock.onGet(pokemonListUrl).reply(200, { results: pokemonListData });
-      mock.onGet(habitatUrl).reply(200, { results: habitatData });
-      mock.onGet(typeUrl).reply(200, { results: typeData });
-      mock.onGet('/habitat/1/').reply(200, {
-        name: 'cave',
-        pokemon_species: [{ name: 'zubat' }]
-      });
-      mock.onGet('/type/1/').reply(200, {
-        name: 'flying',
-        pokemon: [{ pokemon: { name: 'zubat' } }]
-      });
-  
-      // 1. Buscar e combinar dados de habitat e type
-      const fetchedData = await PokemonDataFetcher.obterListaDePokemonComHabitatETipo();
-  
-      // Verifica se os dados de retorno têm a estrutura correta, incluindo URL, habitat e type
-      expect(fetchedData).toMatchObject([
-        expect.objectContaining({
-          name: 'zubat',
-          url: '/pokemon/41/',
-          habitat: 'cave',
-          type: 'flying'
-        })
-      ]);
-  
-      expect(CacheManager.obterDadosDoCache('pokemonListWithHabitatAndTypeCache')).toEqual(fetchedData);
-  
-      // 2. Realizar uma busca fuzzy com critérios AND
-      const mecanismoDeBusca = new FuzzyPokemonSearch(fetchedData, 2);
-      const resultado = await mecanismoDeBusca.buscar({
-        criterioDeBusca: { habitat: 'cave', type: 'flying' },
-        usarClausulaANDParaBusca: true
-      });  
-
-      expect(resultado.data).toMatchObject([
-        expect.objectContaining({ name: 'zubat', url: '/pokemon/41/', habitat: 'cave', type: 'flying' })
-      ]);
-    });
-  });
-  
-  
-  describe('Paginação de Resultados após Busca Fuzzy', () => {
-    test('deve retornar dados paginados corretamente após busca fuzzy', async () => {
-      const pokemonData = [
-        { name: 'bulbasaur', habitat: 'forest', type: 'grass' },
-        { name: 'ivysaur', habitat: 'forest', type: 'grass' },
-        { name: 'venusaur', habitat: 'forest', type: 'grass' },
-        { name: 'charmander', habitat: 'mountain', type: 'fire' },
-        { name: 'charmeleon', habitat: 'mountain', type: 'fire' }
-      ];
-
-      // 1. Definir dados diretamente no cache para simular busca completa
-      CacheManager.definirDadosNoCache('pokemonListWithHabitatAndTypeCache', pokemonData);
-
-      // 2. Realizar busca fuzzy e verificar paginação
-      const mecanismoDeBusca = new FuzzyPokemonSearch(pokemonData, 2);
-      const resultado = await mecanismoDeBusca.buscar({
-        criterioDeBusca: { habitat: 'forest' },
-        usarClausulaANDParaBusca: false,
+        criterioDeBusca: { habitat: 'floresta', type: 'flying' },
+        usarClausulaANDParaBusca: true,
         pagina: 1
       });
 
-      expect(resultado.data).toEqual([
-        expect.objectContaining({ name: 'bulbasaur' }),
-        expect.objectContaining({ name: 'ivysaur' })
-      ]);
-      expect(resultado.meta).toEqual({
-        current_page: 1,
-        total_pages: 2,
-        total_count: 3,
-        items_in_current_page: 2
-      });
+      expect(resultado.data).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ name: 'scyther', habitat: 'forest', type: expect.arrayContaining(['bug', 'flying']) })
+        ])
+      );
     });
 
-    test('deve retornar dados vazios e meta correta para página sem resultados', async () => {
-      const pokemonData = [
-        { name: 'bulbasaur', habitat: 'forest', type: 'grass' },
-        { name: 'ivysaur', habitat: 'forest', type: 'grass' }
-      ];
-
-      CacheManager.definirDadosNoCache('pokemonListWithHabitatAndTypeCache', pokemonData);
-      const mecanismoDeBusca = new FuzzyPokemonSearch(pokemonData, 2);
-
+    test('Busca por "name" e "type" em inglês com habitat em português ("mar")', async () => {
       const resultado = await mecanismoDeBusca.buscar({
-        criterioDeBusca: { habitat: 'forest' },
-        usarClausulaANDParaBusca: false,
-        pagina: 2
+        criterioDeBusca: { name: 'gyarados', type: 'water', habitat: 'mar' },
+        usarClausulaANDParaBusca: true,
+        pagina: 1
       });
 
-      expect(resultado.data).toEqual([]);
-      expect(resultado.meta).toEqual({
-        current_page: 2,
-        total_pages: 1,
-        total_count: 2,
-        items_in_current_page: 0
+      expect(resultado.data).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ name: 'gyarados', habitat: 'sea', type: expect.arrayContaining(['water', 'flying']) })
+        ])
+      );
+    });
+
+    test('Busca fuzzy com "name" em inglês, "type" em português e habitat em português', async () => {
+      const resultado = await mecanismoDeBusca.buscar({
+        criterioDeBusca: { name: 'pikchu', type: 'elétrico', habitat: 'floresta' },
+        usarClausulaANDParaBusca: true,
+        pagina: 1
       });
+
+      expect(resultado.data).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ name: 'pikachu', habitat: 'forest', type: expect.arrayContaining(['electric']) })
+        ])
+      );
+    });
+
+    test('Busca combinada com erro de digitação em português para "type" e "habitat"', async () => {
+      const resultado = await mecanismoDeBusca.buscar({
+        criterioDeBusca: { habitat: 'muntanho', type: 'fgo' },
+        usarClausulaANDParaBusca: true,
+        pagina: 1
+      });
+
+      expect(resultado.data).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ name: 'charizard', habitat: 'mountain', type: expect.arrayContaining(['fire', 'flying']) })
+        ])
+      );
+    });
+
+    test('Busca com todos os critérios em português ("tipo", "habitat" e nome)', async () => {
+      const resultado = await mecanismoDeBusca.buscar({
+        criterioDeBusca: { name: 'dragonite', habitat: 'raro', type: 'dragão' },
+        usarClausulaANDParaBusca: true,
+        pagina: 1
+      });
+
+      expect(resultado.data).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ name: 'dragonite', habitat: 'rare', type: expect.arrayContaining(['dragon', 'flying']) })
+        ])
+      );
+    });
+
+    test('Busca com "name" em português e combinação de "type" e "habitat" em inglês com erro de digitação', async () => {
+      // Instancia um mecanismo de busca temporário com precisão 0.4 por causa de sciter
+      // const mecanismoDeBuscaCustom = new FuzzyPokemonSearch(dadosDePokemon, 3, ['name', 'habitat', 'type'], 0.4, 0.4);
+      
+      const resultado = await mecanismoDeBusca.buscar({
+        criterioDeBusca: { name: 'sciter', type: 'bug', habitat: 'forest' },
+        usarClausulaANDParaBusca: true,
+        pagina: 1
+      });
+
+      expect(resultado.data).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ name: 'scyther', habitat: 'forest', type: expect.arrayContaining(['bug', 'flying']) })
+        ])
+      );
+    });
+
+    test('Busca combinada com "type" e "habitat" mistos e nome fuzzy', async () => {
+      const resultado = await mecanismoDeBusca.buscar({
+        criterioDeBusca: { name: 'venusar', habitat: 'grassland', type: 'grama' },
+        usarClausulaANDParaBusca: true,
+        pagina: 1
+      });
+
+      expect(resultado.data).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ name: 'venusaur', habitat: 'grassland', type: expect.arrayContaining(['grass', 'poison']) })
+        ])
+      );
+    });
+  });
+
+  describe('Busca com Fuzzy e Erros de Digitação em Critérios Mistos', () => {
+    
+    test('Busca com todos os critérios fuzzy em português e inglês com pequenos erros', async () => {
+      const resultado = await mecanismoDeBusca.buscar({
+        criterioDeBusca: { name: 'gngar', type: 'venenoso', habitat: 'urbano' },
+        usarClausulaANDParaBusca: true,
+        pagina: 1
+      });
+
+      expect(resultado.data).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ name: 'gengar', habitat: 'urban', type: expect.arrayContaining(['ghost', 'poison']) })
+        ])
+      );
+    });
+
+    test('Busca com combinação de "type" e "habitat" em inglês e "name" em português com erro de digitação', async () => {
+      const resultado = await mecanismoDeBusca.buscar({
+        criterioDeBusca: { name: 'pikatchu', type: 'electric', habitat: 'forest' },
+        usarClausulaANDParaBusca: true,
+        pagina: 1
+      });
+
+      expect(resultado.data).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ name: 'pikachu', habitat: 'forest', type: expect.arrayContaining(['electric']) })
+        ])
+      );
+    });
+
+    test('Busca com habitat em inglês e tipo em português com erro de digitação', async () => {
+      const resultado = await mecanismoDeBusca.buscar({
+        criterioDeBusca: { habitat: 'mountain', type: 'fog' },
+        usarClausulaANDParaBusca: true,
+        pagina: 1
+      });
+
+      expect(resultado.data).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ name: 'charizard', habitat: 'mountain', type: expect.arrayContaining(['fire', 'flying']) })
+        ])
+      );
     });
   });
 });

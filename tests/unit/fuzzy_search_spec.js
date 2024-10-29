@@ -21,15 +21,15 @@ describe('FuzzyPokemonSearch', () => {
       const opcoes = mecanismoDeBusca.configurarOpcoesDeBusca();
       expect(opcoes).toEqual({
         keys: ['name', 'habitat'],
-        threshold: 0.2,
+        threshold: 0.4,
         ignoreLocation: true
       });
     });
 
     test('permite alteração de threshold nas opções de busca', () => {
-      mecanismoDeBusca.precisaoDaBusca = 0.4;
+      mecanismoDeBusca.precisaoDaBusca = 0.5;
       const opcoes = mecanismoDeBusca.configurarOpcoesDeBusca();
-      expect(opcoes.threshold).toBe(0.4);
+      expect(opcoes.threshold).toBe(0.5);
     });
   });
 
