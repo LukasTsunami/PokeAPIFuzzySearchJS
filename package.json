@@ -12,7 +12,7 @@
     "build": "babel src --out-dir dist",
     "test": "jest"
   },
-  "author": "Samuel",
+  "author": "LukasTsunami",
   "license": "ISC",
   "devDependencies": {
     "@babel/cli": "^7.25.9",
