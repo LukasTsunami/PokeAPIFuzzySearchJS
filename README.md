@@ -13,7 +13,7 @@ Uma vez que a API estiver em pé, você pode consumir ela pela URI
 Passando como parâmetro os critérios de busca
 
 | Critério  | Variações dele que funcionam |O que ele representa|
-| ------------- | ------------- |
+| ------------- | ------------- |-----------|
 | name  | nome  |Nome do Pokémon|
 | type  | tipo  |Tipo do Pokémon|
 | habitat  | habitat  |Onde ele habita|
