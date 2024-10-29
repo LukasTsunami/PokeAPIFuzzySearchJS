@@ -1,13 +1,13 @@
-import axios from 'axios';
-import axiosRetry from 'axios-retry';
-import { CacheManager } from './cache_manager'
+import axios from "axios";
+import axiosRetry from "axios-retry";
+import { CacheManager } from "./cache_manager";
 
 // A API vai bloquear muitas chamadas consecutivas, então fazemos isso de uma forma segura:
 axiosRetry(axios, {
   retries: 6,
   retryDelay: axiosRetry.exponentialDelay, // Aumenta o tempo entre tentativas exponencialmente
-  retryCondition: (error) => {
-    return error.code === 'ETIMEDOUT' || error.response?.status === 429; // Re-tenta no caso de timeout ou erro 429
+  retryCondition: error => {
+    return error.code === "ETIMEDOUT" || error.response?.status === 429; // Re-tenta no caso de timeout ou erro 429
   }
 });
 
@@ -28,11 +28,11 @@ export class PokemonDataFetcher {
   }
 
   static async obterListaDePokemon() {
-    return await this.buscarDados('https://pokeapi.co/api/v2/pokemon?limit=1302', 'pokemonListCache');
+    return await this.buscarDados("https://pokeapi.co/api/v2/pokemon?limit=1302", "pokemonListCache");
   }
 
   static async obterMapaDePokemonPorHabitat() {
-    const habitatsDePokemon = await this.buscarDados('https://pokeapi.co/api/v2/pokemon-habitat/', 'pokemonHabitatListCache');
+    const habitatsDePokemon = await this.buscarDados("https://pokeapi.co/api/v2/pokemon-habitat/", "pokemonHabitatListCache");
     const urlsDeHabitatsDePokemon = habitatsDePokemon.map(habitat => habitat.url);
 
     try {
@@ -54,7 +54,7 @@ export class PokemonDataFetcher {
   }
 
   static async obterMapaDePokemonPorTipo() {
-    const tiposDePokemon = await this.buscarDados('https://pokeapi.co/api/v2/type/', 'pokemonTypeListCache');
+    const tiposDePokemon = await this.buscarDados("https://pokeapi.co/api/v2/type/", "pokemonTypeListCache");
     const urlsDeTiposDePokemon = tiposDePokemon.map(tipo => tipo.url);
 
     try {
@@ -78,7 +78,7 @@ export class PokemonDataFetcher {
   }
 
   static async obterListaDePokemonComHabitatETipo() {
-    const chaveDoCache = 'pokemonListWithHabitatAndTypeCache';
+    const chaveDoCache = "pokemonListWithHabitatAndTypeCache";
     const dadosEmCache = CacheManager.obterDadosDoCache(chaveDoCache);
 
     if (dadosEmCache) return dadosEmCache;
@@ -91,8 +91,8 @@ export class PokemonDataFetcher {
 
     const listaDePokemonComDetalhes = listaDePokemon.map(pokemon => ({
       ...pokemon,
-      habitat: mapaDeHabitats.get(pokemon.name) || 'unknown',
-      type: mapaDeTipos.get(pokemon.name)?.join(', ') || 'unknown'
+      habitat: mapaDeHabitats.get(pokemon.name) || "unknown",
+      type: mapaDeTipos.get(pokemon.name)?.join(", ") || "unknown"
     }));
 
     CacheManager.definirDadosNoCache(chaveDoCache, listaDePokemonComDetalhes);

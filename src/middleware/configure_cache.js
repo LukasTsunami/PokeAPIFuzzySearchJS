@@ -1,6 +1,6 @@
-import { LocalStorage } from 'node-localstorage';
+import { LocalStorage } from "node-localstorage";
 
-global.localStorage = new LocalStorage('./cache');
+global.localStorage = new LocalStorage("./cache");
 
 function configureCache(req, res, next) {
   next();

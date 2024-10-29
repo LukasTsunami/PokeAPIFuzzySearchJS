@@ -1,9 +1,9 @@
-import { LocalStorage } from 'node-localstorage';
-
-import { FuzzyPokemonSearch, PokemonDataFetcher } from './fuzzy_search.js';
+/* eslint-disable no-console */
+import { LocalStorage } from "node-localstorage";
+import { FuzzyPokemonSearch, PokemonDataFetcher } from "./fuzzy_search.js";
 
 // Necessário apenas se rodar no Node.js
-global.localStorage = new LocalStorage('./cache');
+global.localStorage = new LocalStorage("./cache");
 
 async function principal() {
   const dadosDePokemonComDetalhes = await PokemonDataFetcher.obterListaDePokemonComHabitatETipo();
@@ -11,7 +11,7 @@ async function principal() {
 
   // === Cenário 1: Buscar por Nome Exato (Pikachu) ===
   const buscaPorNomeExato = await mecanismoDeBusca.buscar({
-    criterioDeBusca: { name: 'pikachu' },
+    criterioDeBusca: { name: "pikachu" },
     usarClausulaANDParaBusca: false,
     pagina: 1
   });
@@ -20,7 +20,7 @@ async function principal() {
 
   // === Cenário 2: Busca com Erro de Digitação no Nome (Picachu) ===
   const buscaPorNomeComErro = await mecanismoDeBusca.buscar({
-    criterioDeBusca: { name: 'picachu' },
+    criterioDeBusca: { name: "picachu" },
     usarClausulaANDParaBusca: false,
     pagina: 1
   });
@@ -29,7 +29,7 @@ async function principal() {
 
   // === Cenário 3: Buscar por Tipo Exato (Fogo) ===
   const buscaPorTipoExato = await mecanismoDeBusca.buscar({
-    criterioDeBusca: { type: 'fire' },
+    criterioDeBusca: { type: "fire" },
     usarClausulaANDParaBusca: false,
     pagina: 1
   });
@@ -38,7 +38,7 @@ async function principal() {
 
   // === Cenário 4: Buscar por Habitat Exato (Montanha) ===
   const buscaPorHabitatExato = await mecanismoDeBusca.buscar({
-    criterioDeBusca: { habitat: 'mountain' },
+    criterioDeBusca: { habitat: "mountain" },
     usarClausulaANDParaBusca: false,
     pagina: 1
   });
@@ -47,7 +47,7 @@ async function principal() {
 
   // === Cenário 5: Buscar por Habitat e Tipo (Montanha e Pedra) com Lógica AND ===
   const buscaPorHabitatETipo = await mecanismoDeBusca.buscar({
-    criterioDeBusca: { habitat: 'mountain', type: 'rock' },
+    criterioDeBusca: { habitat: "mountain", type: "rock" },
     usarClausulaANDParaBusca: true,
     pagina: 1
   });
@@ -56,7 +56,7 @@ async function principal() {
 
   // === Cenário 6: Busca Paginada com Filtro de Habitat (Floresta) - Página 1 ===
   const buscaPaginadaPagina1 = await mecanismoDeBusca.buscar({
-    criterioDeBusca: { habitat: 'forest' },
+    criterioDeBusca: { habitat: "forest" },
     usarClausulaANDParaBusca: false,
     pagina: 1
   });
@@ -65,7 +65,7 @@ async function principal() {
 
   // === Cenário 7: Busca Paginada com Filtro de Habitat (Floresta) - Página 2 ===
   const buscaPaginadaPagina2 = await mecanismoDeBusca.buscar({
-    criterioDeBusca: { habitat: 'forest' },
+    criterioDeBusca: { habitat: "forest" },
     usarClausulaANDParaBusca: false,
     pagina: 2
   });
@@ -74,7 +74,7 @@ async function principal() {
 
   // === Cenário 8: Buscar Pokémon que não se Encontram no Cache ===
   const buscaPorNomeNaoEncontrado = await mecanismoDeBusca.buscar({
-    criterioDeBusca: { name: 'missingno' },
+    criterioDeBusca: { name: "missingno" },
     usarClausulaANDParaBusca: false,
     pagina: 1
   });
@@ -83,7 +83,7 @@ async function principal() {
 
   // === Cenário 9: Buscar por Tipo e Habitat com Lógica OR (Fogo ou Floresta) ===
   const buscaPorTipoOuHabitat = await mecanismoDeBusca.buscar({
-    criterioDeBusca: { type: 'fire', habitat: 'forest' },
+    criterioDeBusca: { type: "fire", habitat: "forest" },
     usarClausulaANDParaBusca: false,
     pagina: 1
   });
@@ -101,7 +101,7 @@ async function principal() {
 
   // === Cenário 11: Busca com Erro de Digitação em Habitat (Mountaon) ===
   const buscaPorHabitatComErro = await mecanismoDeBusca.buscar({
-    criterioDeBusca: { habitat: 'mountaon' },
+    criterioDeBusca: { habitat: "mountaon" },
     usarClausulaANDParaBusca: false,
     pagina: 1
   });
@@ -110,7 +110,7 @@ async function principal() {
 
   // === Cenário 12: Busca por Tipo Inexistente (Ex: "Espaço") ===
   const buscaPorTipoInexistente = await mecanismoDeBusca.buscar({
-    criterioDeBusca: { type: 'space' },
+    criterioDeBusca: { type: "space" },
     usarClausulaANDParaBusca: false,
     pagina: 1
   });
@@ -119,7 +119,7 @@ async function principal() {
 
   // === Cenário 13: Busca por Nome e Tipo Inexistentes com Lógica OR ===
   const buscaPorNomeETipoInexistentes = await mecanismoDeBusca.buscar({
-    criterioDeBusca: { name: 'unknownmon', type: 'space' },
+    criterioDeBusca: { name: "unknownmon", type: "space" },
     usarClausulaANDParaBusca: false,
     pagina: 1
   });
@@ -137,7 +137,7 @@ async function principal() {
 
   // === Cenário 15: Busca com Critério Complexo - Habitat, Tipo e Nome Parciais ===
   const buscaComplexa = await mecanismoDeBusca.buscar({
-    criterioDeBusca: { habitat: 'mountain', type: 'fire', name: 'char' },
+    criterioDeBusca: { habitat: "mountain", type: "fire", name: "char" },
     usarClausulaANDParaBusca: true,
     pagina: 1
   });
@@ -148,7 +148,7 @@ async function principal() {
 
   // Cenário 16: Termos em português para habitat e tipo
   const searchByPortugueseTerms = await mecanismoDeBusca.buscar({
-    criterioDeBusca: { habitat: 'floresta', type: 'fogo' },
+    criterioDeBusca: { habitat: "floresta", type: "fogo" },
     usarClausulaANDParaBusca: false,
     pagina: 1
   });
@@ -156,7 +156,7 @@ async function principal() {
 
   // Cenário 17: Termos misturados (inglês e português)
   const searchByMixedTerms = await mecanismoDeBusca.buscar({
-    criterioDeBusca: { habitat: 'cave', type: 'grama' },
+    criterioDeBusca: { habitat: "cave", type: "grama" },
     usarClausulaANDParaBusca: false,
     pagina: 1
   });
@@ -168,7 +168,7 @@ async function principal() {
 
   // Cenário 18: Termos com erro de digitação misturados (inglês e português)
   const searchWithTypos = await mecanismoDeBusca.buscar({
-    criterioDeBusca: { habitat: 'hountain', type: 'fire' }, // "fier" como erro de digitação para "fire"
+    criterioDeBusca: { habitat: "hountain", type: "fire" }, // "fier" como erro de digitação para "fire"
     usarClausulaANDParaBusca: true,
     pagina: 1
   });
@@ -176,7 +176,7 @@ async function principal() {
 
   // Cenário 19: Termo em inglês com erro de digitação para habitat
   const searchWithTypoInHabitat = await mecanismoDeBusca.buscar({
-    criterioDeBusca: { habitat: 'glassland', type: 'grasss', name: 'bul' }, // "mountaon" como erro de digitação para "mountain"
+    criterioDeBusca: { habitat: "glassland", type: "grasss", name: "bul" }, // "mountaon" como erro de digitação para "mountain"
     usarClausulaANDParaBusca: false,
     pagina: 1
   });
@@ -186,7 +186,7 @@ async function principal() {
   
   // Cenário 20: Termo em inglês com erro de digitação para habitat
   const searchOnlyName = await mecanismoDeBusca.buscar({
-    criterioDeBusca: { name: 'bulbazaur', type: 'glass', habitat: 'grasslando' }, // "mountaon" como erro de digitação para "mountain"
+    criterioDeBusca: { name: "bulbazaur", type: "glass", habitat: "grasslando" }, // "mountaon" como erro de digitação para "mountain"
     usarClausulaANDParaBusca: true,
     pagina: 1
   });
@@ -195,7 +195,7 @@ async function principal() {
   console.warn("------------------------------------------------------");
 
   const searchOnlyTypeFuzzy = await mecanismoDeBusca.buscar({
-    criterioDeBusca: { type: 'glass', name: 'bul' }, // "mountaon" como erro de digitação para "mountain"
+    criterioDeBusca: { type: "glass", name: "bul" }, // "mountaon" como erro de digitação para "mountain"
     usarClausulaANDParaBusca: true,
     pagina: 1
   });
@@ -205,3 +205,4 @@ async function principal() {
 }
 
 principal().catch(error => console.error("Erro:", error));
+/* eslint-enable no-console */

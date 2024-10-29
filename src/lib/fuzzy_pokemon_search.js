@@ -1,12 +1,12 @@
-import Fuse from 'fuse.js';
-import { I18nTranslator } from './i18n_translator';
-import translations from '../../config/i18n/pt-br.json';
+import Fuse from "fuse.js";
+import { I18nTranslator } from "./i18n_translator";
+import translations from "../../config/i18n/pt-br.json";
 
 export class FuzzyPokemonSearch {
   constructor({
     dadosDePokemon,
     itensPorPagina = 10,
-    chavesDeBusca = ['name', 'habitat', 'type'],
+    chavesDeBusca = ["name", "habitat", "type"],
     precisaoDaBusca = 0.4,
     precisaoDaBuscaTraduzida = 0.4
   }) {
@@ -16,7 +16,7 @@ export class FuzzyPokemonSearch {
     this.chavesDeBusca = chavesDeBusca;
     this.precisaoDaBusca = precisaoDaBusca;
     this.fuse = new Fuse(this.dadosDePokemon, this.configurarOpcoesDeBusca());
-    this.fuseType = new Fuse(this.dadosDePokemon, { keys: ['type'], threshold: this.precisaoDaBusca, ignoreLocation: true });
+    this.fuseType = new Fuse(this.dadosDePokemon, { keys: ["type"], threshold: this.precisaoDaBusca, ignoreLocation: true });
 
     // Configuração para o Fuse de tradução
     const termosDeTraducao = Object.values(translations).flatMap(obj => Object.keys(obj).concat(Object.values(obj)));
@@ -25,14 +25,14 @@ export class FuzzyPokemonSearch {
   
   configurarOpcoesDeBusca() {
     return {
-      keys: this.chavesDeBusca.filter(chave => chave !== 'type'),
+      keys: this.chavesDeBusca.filter(chave => chave !== "type"),
       threshold: this.precisaoDaBusca,
-      ignoreLocation: true,
+      ignoreLocation: true
     };
   }
 
   splitType(type) {
-    return typeof type === 'string' ? type.split(',').map(t => t.trim()) : type;
+    return typeof type === "string" ? type.split(",").map(t => t.trim()) : type;
   }
 
   prepararDados(dados) {
@@ -41,7 +41,7 @@ export class FuzzyPokemonSearch {
       habitat: this.tradutor.traduzir(item.habitat),
       type: Array.isArray(item.type)
         ? item.type.map(t => this.tradutor.traduzir(t))
-        : this.splitType(this.tradutor.traduzir(item.type)),
+        : this.splitType(this.tradutor.traduzir(item.type))
     }));
   }
 
@@ -54,7 +54,7 @@ export class FuzzyPokemonSearch {
     const criteriosCorrigidos = {};
     for (const [campo, termo] of Object.entries(criterioDeBusca)) {
       // Aplicamos `buscarTermoTraduzido` apenas se necessário
-      const termoCorrigido = campo !== 'name' ? this.buscarTermoTraduzido(termo) : termo;
+      const termoCorrigido = campo !== "name" ? this.buscarTermoTraduzido(termo) : termo;
       criteriosCorrigidos[campo] = this.tradutor.traduzir(termoCorrigido); // Tradução final
     }
     return criteriosCorrigidos;
@@ -68,7 +68,7 @@ export class FuzzyPokemonSearch {
       // Filtra rigorosamente para cada critério com AND
       resultados = this.dadosDePokemon.filter(item =>
         Object.entries(criteriosTraduzidos).every(([campo, valor]) => {
-          const fuseBusca = campo === 'type' ? this.fuseType : this.fuse;
+          const fuseBusca = campo === "type" ? this.fuseType : this.fuse;
           const resultadoFuse = fuseBusca.search(valor).map(res => res.item);
           return resultadoFuse.some(res => res.name === item.name);
         })
@@ -76,7 +76,7 @@ export class FuzzyPokemonSearch {
     } else {
       // Realiza buscas individuais e combina os resultados com OR
       const buscasIndividuais = Object.entries(criteriosTraduzidos).map(([campo, valor]) => {
-        const fuseBusca = campo === 'type' ? this.fuseType : new Fuse(this.dadosDePokemon, { keys: [campo], threshold: this.precisaoDaBusca });
+        const fuseBusca = campo === "type" ? this.fuseType : new Fuse(this.dadosDePokemon, { keys: [campo], threshold: this.precisaoDaBusca });
         return fuseBusca.search(valor).map(result => result.item);
       });
       resultados = [...new Set(buscasIndividuais.flat())];

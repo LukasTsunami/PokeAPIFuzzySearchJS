@@ -1,4 +1,4 @@
-import * as translations from '../../config/i18n/pt-br.json';
+import * as translations from "../../config/i18n/pt-br.json";
 
 export class I18nTranslator {
   traduzir(termo) {
