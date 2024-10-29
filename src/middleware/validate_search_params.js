@@ -11,7 +11,8 @@ function validateSearchParams(req, res, next) {
     'habitat', 
     'nome', 
     'tipo', 
-    'page', 
+    'page',
+    'limit',
     'usarClausulaANDParaBusca',
     'precisaoDaBusca',
     'precisaoDaBuscaTraduzidaFloat'
