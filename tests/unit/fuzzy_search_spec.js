@@ -130,21 +130,19 @@ describe('FuzzyPokemonSearch', () => {
       expect(resultado.data).toEqual([expect.objectContaining({ name: 'pikachu', habitat: 'forest', type: ['electric'] })]);
     });
 
-    test('nome, habitat e tipo', async () => {
+    test('7 - nome, habitat e tipo', async () => {
       const resultado = await mecanismoDeBusca.buscar({
         criterioDeBusca: { name: 'venusaur', type: 'grass', habitat: 'grassland' },
         usarClausulaANDParaBusca: true
       });
-        
-      expect(resultado.data).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            name: 'venusaur',
-            habitat: 'grassland',
-            type: expect.arrayContaining(['grass', 'poison'])
-          })
-        ])
-      );
+    
+      expect(resultado.data).toEqual([
+        expect.objectContaining({
+          name: 'venusaur',
+          habitat: 'grassland',
+          type: expect.arrayContaining(['grass', 'poison'])
+        })
+      ]);
     });
 
     test('ordem diferente dos critérios', async () => {
