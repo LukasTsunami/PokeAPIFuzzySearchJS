@@ -33,7 +33,7 @@ Para Rodar os testes simplesmente rode o comando
 
 ou simplesmente, se for rodar da sua máquina:
 
-`npm run dev
+`npm run dev`
 
 As traduções ficam na pasta 
 `config/i18n/abreviação_linguagem.json`
