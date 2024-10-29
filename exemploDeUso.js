@@ -1,5 +1,3 @@
-// exampleUsage.js
-
 import { LocalStorage } from 'node-localstorage';
 
 import { FuzzyPokemonSearch, PokemonDataFetcher } from './fuzzy_search.js';
@@ -7,7 +5,7 @@ import { FuzzyPokemonSearch, PokemonDataFetcher } from './fuzzy_search.js';
 // Necessário apenas se rodar no node
 global.localStorage = new LocalStorage('./scratch');
 
-async function runExample() {
+async function main() {
   const pokemonDataWithDetails = await PokemonDataFetcher.obterListaDePokemonComHabitatETipo();
   const searchEngine = new FuzzyPokemonSearch(pokemonDataWithDetails, 5);
 
@@ -147,4 +145,4 @@ async function runExample() {
   console.warn("------------------------------------------------------");
 }
 
-runExample().catch(error => console.error("Erro:", error));
+main().catch(error => console.error("Erro:", error));
