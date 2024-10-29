@@ -1,12 +1,27 @@
+version: '3.8'
+
 services:
-  pokedex-fuzzy-search:
+  # Serviço para desenvolvimento
+  app-dev:
     build:
       context: .
-      dockerfile: Dockerfile
+      target: development
     environment:
       - NODE_ENV=development
     ports:
-      - "3055:3000"
+      - "3000:3000"
     volumes:
-      - .:/app
-    command: npm start src/exemploDeUso.js
+      - .:/usr/src/app  # Sincroniza o código-fonte local com o container
+      - /usr/src/app/node_modules # Evita conflitos com node_modules no host
+    command: npm run dev
+
+  # Serviço para produção
+  app-prod:
+    build:
+      context: .
+      target: production
+    environment:
+      - NODE_ENV=production
+    ports:
+      - "3000:3000"
+    command: node dist/api.js
